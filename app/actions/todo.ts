@@ -2,15 +2,18 @@
 
 import { Todo } from "@/types/todo";
 import { readTodos, writeTodos } from "@/lib/db";
+import { revalidatePath } from "next/cache";
 
-export async function addTodo(text: string) {
-  if (!text.trim()) throw new Error("Text is required");
+export async function addTodo(formData: FormData) {
+  const text = formData.get("text") as string;
+  if (!text?.trim()) throw new Error("Text is required");
 
   const todos: Todo[] = await readTodos();
   const newTodo: Todo = { id: Date.now(), text: text.trim(), completed: false };
   todos.push(newTodo);
   await writeTodos(todos);
 
+  revalidatePath("/");
   return newTodo;
 }
 

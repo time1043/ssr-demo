@@ -1,7 +1,6 @@
 "use client";
 
-import { useState } from "react";
-
+import { useRef, useState } from "react";
 import { addTodo, toggleTodo, deleteTodo } from "@/app/actions/todo";
 import { Todo } from "@/types/todo";
 
@@ -11,13 +10,12 @@ type Props = {
 
 export default function TodoListClient({ initialTodos }: Props) {
   const [todos, setTodos] = useState(initialTodos);
-  const [newTodo, setNewTodo] = useState("");
+  const formRef = useRef<HTMLFormElement>(null);
 
-  async function handleAdd() {
-    if (!newTodo.trim()) return;
-    const todo = await addTodo(newTodo);
+  async function handleAdd(formData: FormData) {
+    const todo = await addTodo(formData);
     setTodos([...todos, todo]);
-    setNewTodo("");
+    formRef.current?.reset();
   }
 
   async function handleToggle(id: number) {
@@ -32,22 +30,20 @@ export default function TodoListClient({ initialTodos }: Props) {
 
   return (
     <>
-      <div className="flex gap-2 mb-4">
+      <form ref={formRef} action={handleAdd} className="flex gap-2 mb-4">
         <input
+          name="text"
           type="text"
-          value={newTodo}
-          onChange={(e) => setNewTodo(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && handleAdd()}
           placeholder="Add a todo..."
           className="flex-1 p-2 border border-gray-300 rounded-lg"
         />
         <button
-          onClick={handleAdd}
+          type="submit"
           className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
         >
           Add
         </button>
-      </div>
+      </form>
 
       <ul className="space-y-3">
         {todos.map((todo) => (
