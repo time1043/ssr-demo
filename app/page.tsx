@@ -1,6 +1,7 @@
 import { Todo } from "@/types/todo";
 
 async function getTodos() {
+  await new Promise((resolve) => setTimeout(resolve, 5000));
   const res = await fetch("http://localhost:4000/todos");
   const todos: Todo[] = await res.json();
   return todos;
