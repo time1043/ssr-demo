@@ -1,16 +1,17 @@
 "use client";
 
 import { getAdviceApi } from "@/lib/active";
-import { useState } from "react";
+import { use, useState } from "react";
 
 type AdviceClientComponentProps = {
-  initialAdvice: string;
+  advicePromise: Promise<{ slip: { advice: string } }>;
 };
 
 export default function AdviceClientComponent({
-  initialAdvice,
+  advicePromise,
 }: AdviceClientComponentProps) {
-  const [advice, setAdvice] = useState(initialAdvice);
+  const data = use(advicePromise);
+  const [advice, setAdvice] = useState(data.slip.advice);
   const [isLoading, setIsLoading] = useState(false);
 
   async function getAdvice() {
