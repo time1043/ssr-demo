@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 
+import { addTodo, toggleTodo, deleteTodo } from "@/app/actions/todo";
 import { Todo } from "@/types/todo";
 
 type Props = {
@@ -14,26 +15,19 @@ export default function TodoListClient({ initialTodos }: Props) {
 
   async function handleAdd() {
     if (!newTodo.trim()) return;
-    const res = await fetch("/api/todos", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text: newTodo }),
-    });
-    const todo = await res.json();
+    const todo = await addTodo(newTodo);
     setTodos([...todos, todo]);
     setNewTodo("");
   }
 
-  function handleToggle(id: number) {
-    setTodos(
-      todos.map((todo) =>
-        todo.id === id ? { ...todo, completed: !todo.completed } : todo,
-      ),
-    );
+  async function handleToggle(id: number) {
+    const updated = await toggleTodo(id);
+    setTodos(todos.map((t) => (t.id === id ? updated : t)));
   }
 
-  function handleDelete(id: number) {
-    setTodos(todos.filter((todo) => todo.id !== id));
+  async function handleDelete(id: number) {
+    await deleteTodo(id);
+    setTodos(todos.filter((t) => t.id !== id));
   }
 
   return (
