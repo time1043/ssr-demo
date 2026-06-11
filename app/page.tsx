@@ -1,28 +1,15 @@
-import { Todo } from "@/types/todo";
+import { Suspense } from "react";
 
-async function getTodos() {
-  await new Promise((resolve) => setTimeout(resolve, 5000));
-  const res = await fetch("http://localhost:4000/todos");
-  const todos: Todo[] = await res.json();
-  return todos;
-}
+import Loading from "@/components/loading";
+import TodoList from "./components/todo-list";
 
-export default async function Page() {
-  const todos = await getTodos();
-
+export default function Page() {
   return (
     <main className="max-w-2xl mx-auto p-6">
       <h1 className="text-2xl font-bold mb-6">Todo List</h1>
-      <ul className="space-y-3">
-        {todos.map((todo) => (
-          <li
-            key={todo.id}
-            className="p-4 bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow"
-          >
-            <h2 className="text-lg">{todo.text}</h2>
-          </li>
-        ))}
-      </ul>
+      <Suspense fallback={<Loading />}>
+        <TodoList />
+      </Suspense>
     </main>
   );
 }
