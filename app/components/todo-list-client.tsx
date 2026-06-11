@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useOptimistic, useRef, useTransition } from "react";
 import { addTodo, toggleTodo, deleteTodo } from "@/app/actions/todo";
 import { Todo } from "@/types/todo";
 import SubmitButton from "./submit-button";
@@ -9,24 +9,48 @@ type Props = {
   initialTodos: Todo[];
 };
 
+type Action =
+  | { type: "add"; todo: Todo }
+  | { type: "toggle"; id: number }
+  | { type: "delete"; id: number };
+
 export default function TodoListClient({ initialTodos }: Props) {
-  const [todos, setTodos] = useState(initialTodos);
   const formRef = useRef<HTMLFormElement>(null);
+  const [, startTransition] = useTransition();
+  const [todos, updateTodos] = useOptimistic(
+    initialTodos,
+    (state: Todo[], action: Action) => {
+      switch (action.type) {
+        case "add":
+          return [...state, action.todo];
+        case "toggle":
+          return state.map((t) =>
+            t.id === action.id ? { ...t, completed: !t.completed } : t
+          );
+        case "delete":
+          return state.filter((t) => t.id !== action.id);
+      }
+    }
+  );
 
   async function handleAdd(formData: FormData) {
-    const todo = await addTodo(formData);
-    setTodos([...todos, todo]);
+    const text = formData.get("text") as string;
+    if (!text?.trim()) return;
+    startTransition(() =>
+      updateTodos({ type: "add", todo: { id: Date.now(), text, completed: false } })
+    );
     formRef.current?.reset();
+    await addTodo(formData);
   }
 
   async function handleToggle(id: number) {
-    const updated = await toggleTodo(id);
-    setTodos(todos.map((t) => (t.id === id ? updated : t)));
+    startTransition(() => updateTodos({ type: "toggle", id }));
+    await toggleTodo(id);
   }
 
   async function handleDelete(id: number) {
+    startTransition(() => updateTodos({ type: "delete", id }));
     await deleteTodo(id);
-    setTodos(todos.filter((t) => t.id !== id));
   }
 
   return (
