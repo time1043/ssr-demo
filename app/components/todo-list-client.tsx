@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { addTodo, toggleTodo, deleteTodo } from "@/app/actions/todo";
 import { Todo } from "@/types/todo";
+import SubmitButton from "./submit-button";
 
 type Props = {
   initialTodos: Todo[];
@@ -37,12 +38,7 @@ export default function TodoListClient({ initialTodos }: Props) {
           placeholder="Add a todo..."
           className="flex-1 p-2 border border-gray-300 rounded-lg"
         />
-        <button
-          type="submit"
-          className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
-        >
-          Add
-        </button>
+        <SubmitButton />
       </form>
 
       <ul className="space-y-3">
