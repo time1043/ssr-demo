@@ -1,7 +1,6 @@
 import { Todo } from "@/types/todo";
-import { readFile } from "fs/promises";
+import { readTodos, writeTodos } from "@/lib/db";
 import { NextRequest } from "next/server";
-import path from "path";
 
 // http://localhost:3000/api/todos
 export async function GET(request: NextRequest) {
@@ -11,17 +10,22 @@ export async function GET(request: NextRequest) {
     return Response.json({ message: "Invalid order value" }, { status: 400 });
   }
 
-  const data = await readFile(
-    path.join(process.cwd(), "data", "db.json"),
-    "utf-8",
-  );
-  const { todos } = await JSON.parse(data);
-
-  if (order === "desc") {
-    todos.sort((a: Todo, b: Todo) => b.id - a.id);
-  } else {
-    todos.sort((a: Todo, b: Todo) => a.id - b.id);
-  }
+  const todos: Todo[] = await readTodos();
+  todos.sort((a, b) => (order === "desc" ? b.id - a.id : a.id - b.id));
 
   return Response.json(todos);
+}
+
+export async function POST(request: NextRequest) {
+  const { text } = await request.json();
+  if (!text?.trim()) {
+    return Response.json({ message: "Text is required" }, { status: 400 });
+  }
+
+  const todos: Todo[] = await readTodos();
+  const newTodo: Todo = { id: Date.now(), text: text.trim(), completed: false };
+  todos.push(newTodo);
+  await writeTodos(todos);
+
+  return Response.json(newTodo, { status: 201 });
 }

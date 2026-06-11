@@ -12,9 +12,15 @@ export default function TodoListClient({ initialTodos }: Props) {
   const [todos, setTodos] = useState(initialTodos);
   const [newTodo, setNewTodo] = useState("");
 
-  function handleAdd() {
+  async function handleAdd() {
     if (!newTodo.trim()) return;
-    setTodos([...todos, { id: Date.now(), text: newTodo, completed: false }]);
+    const res = await fetch("/api/todos", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text: newTodo }),
+    });
+    const todo = await res.json();
+    setTodos([...todos, todo]);
     setNewTodo("");
   }
 
