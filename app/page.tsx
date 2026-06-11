@@ -1,13 +1,14 @@
-import { getAdviceApi } from "@/lib/active";
-import AdviceClientComponent from "./components/advice-client-component";
+import { Suspense } from "react";
+import Loading from "./components/loading";
+import AdviceServerComponent from "./components/advice-server-component";
 
-export default async function Page() {
-  const data = await getAdviceApi();
-
+export default function Page() {
   return (
     <main>
       <h1>Advice App - NextJS RSC Version</h1>
-      <AdviceClientComponent initialAdvice={data.slip.advice} />
+      <Suspense fallback={<Loading />}>
+        <AdviceServerComponent />
+      </Suspense>
     </main>
   );
 }
